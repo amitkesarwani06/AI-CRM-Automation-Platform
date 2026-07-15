@@ -11,8 +11,7 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 def ask_llm(user_message: str, system_prompt: str = "You are a helpful CRM assistant.") -> str:
     """The atomic unit of every AI feature we'll build."""
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",  # Updated to the current active Groq model
-
+        model="llama-3.1-8b-instant",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
