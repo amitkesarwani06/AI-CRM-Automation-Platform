@@ -1,28 +1,33 @@
 from abc import ABC, abstractmethod
-from app.core.llm_client import ask_llm
-from app.core.config import LLMConfig, DEFAULT_CONFIG
+from app.core.chat_model import ChatModel, get_chat_model
 
 
 class BaseAgent(ABC):
     """Every agent in the CRM platform inherits from this."""
 
-    def __init__(self, name: str, system_prompt: str, config: LLMConfig = DEFAULT_CONFIG):
+    def __init__(self, name: str, system_prompt: str, chat_model: ChatModel | None = None):
         self.name = name
         self.system_prompt = system_prompt
-        self.config = config
-    
+        self.chat_model = chat_model or get_chat_model()  # injected, or default
+
     @abstractmethod
     def run(self, user_input: str) -> str:
         """Every subclass MUST implement this."""
         raise NotImplementedError
-    @property                          # <-- Makes it accessible as agent.description (no parentheses)
-    @abstractmethod                    # <-- Forces EVERY child class to implement it
+
+    @property
+    @abstractmethod
     def description(self) -> str:
         """Used by the Supervisor to know what this agent does."""
-        ...                            # <-- No implementation here — children provide it
+        ...
+
     def _call_llm(self, user_input: str) -> str:
-        """Shared plumbing — every subclass reuses this."""
-        return ask_llm(user_input, system_prompt=self.system_prompt)
+        """Shared plumbing — builds the messages and calls the ChatModel."""
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": user_input},
+        ]
+        return self.chat_model.chat(messages)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} name={self.name!r}>"
