@@ -1,4 +1,10 @@
+from langchain_core.prompts import ChatPromptTemplate
 from app.agents.base_agent import BaseAgent
+
+# A simple dummy prompt template since GreetingAgent doesn't actually use the LLM
+dummy_prompt = ChatPromptTemplate.from_messages([
+    ("human", "{input}")
+])
 
 
 class GreetingAgent(BaseAgent):
@@ -7,10 +13,10 @@ class GreetingAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="greeting_agent",
-            system_prompt="Not used",
+            prompt=dummy_prompt,
         )
 
-    @property                          # <-- Implementing the abstract property
+    @property
     def description(self) -> str:
         return "A simple greeter that welcomes users to the CRM."
 
