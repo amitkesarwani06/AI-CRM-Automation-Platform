@@ -27,13 +27,16 @@ class BaseAgent(ABC):
         # 1. Format the template variables using LangChain
         messages = self.prompt.format_messages(input=user_input, **prompt_vars)
         
-        # 2. Convert LangChain message objects to the plain dicts our ChatModel expects
-        # (LangChain uses "human" for user messages; we map it back to "user")
+        # 2. Map LangChain message types ("human" -> "user", "ai" -> "assistant")
+        role_map = {"human": "user", "ai": "assistant", "system": "system"}
         as_dicts = [
-            {"role": m.type if m.type != "human" else "user", "content": m.content} 
+            {"role": role_map.get(m.type, m.type), "content": m.content}
             for m in messages
         ]
+
+        # 3. Send to ChatModel
         return self.chat_model.chat(as_dicts)
+
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} name={self.name!r}>"
