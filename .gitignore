@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .idea/
 .vscode/
+
+# Knowledge base raw docs
+app/knowledge_base/raw_docs/*.pdf
+
