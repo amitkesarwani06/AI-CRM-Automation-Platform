@@ -9,3 +9,6 @@ __pycache__/
 app/knowledge_base/raw_docs/*.pdf
 
 app/data/chroma_db/
+
+# FAISS index files
+app/data/faiss_index/
