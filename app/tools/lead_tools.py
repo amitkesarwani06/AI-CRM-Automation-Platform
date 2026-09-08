@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
@@ -7,9 +8,6 @@ from typing import Optional
 # Must be module-level so it persists between tool calls
 _leads_db: dict = {}
 _lead_counter: int = 0
-
-
-# ── Input Schemas ─────────────────────────────────────────────────────────────
 
 class CreateLeadInput(BaseModel):
     name: str = Field(description="Full name of the lead")
@@ -37,9 +35,6 @@ class UpdateLeadInput(BaseModel):
     )
     notes: Optional[str] = Field(default=None, description="Updated notes")
     plan_interest: Optional[str] = Field(default=None, description="Updated plan interest")
-
-
-# ── Tools ─────────────────────────────────────────────────────────────────────
 
 @tool("create_lead", args_schema=CreateLeadInput)
 def create_lead(
@@ -88,7 +83,6 @@ def create_lead(
     result += f"Created: {lead['created_at']}"
     return result
 
-
 @tool("get_lead", args_schema=GetLeadInput)
 def get_lead(
     lead_id: Optional[int] = None,
@@ -128,15 +122,14 @@ def get_lead(
             return "\n\n".join([_format_lead(l) for l in matches])
         return f"No lead found with email '{email}'"
 
-    # List all leads
+    # List all
     result = f"All leads ({len(_leads_db)} total):\n"
     for lead in _leads_db.values():
-        result += f"  [{lead['id']}] {lead['name']}"
+        result += f"• [{lead['id']}] {lead['name']}"
         if lead.get('company'):
             result += f" ({lead['company']})"
-        result += f" - {lead['status']}\n"
+        result += f" — {lead['status']}\n"
     return result
-
 
 @tool("update_lead", args_schema=UpdateLeadInput)
 def update_lead(
@@ -168,7 +161,7 @@ def update_lead(
         if status.lower() not in valid:
             return f"Invalid status '{status}'. Use: {', '.join(valid)}"
         lead["status"] = status.lower()
-        updates.append(f"status -> {status}")
+        updates.append(f"status → {status}")
 
     if notes:
         lead["notes"] = notes
@@ -176,7 +169,7 @@ def update_lead(
 
     if plan_interest:
         lead["plan_interest"] = plan_interest
-        updates.append(f"plan interest -> {plan_interest}")
+        updates.append(f"plan interest → {plan_interest}")
 
     lead["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
 
