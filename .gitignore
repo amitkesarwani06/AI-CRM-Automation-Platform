@@ -12,3 +12,7 @@ app/data/chroma_db/
 
 # FAISS index files
 app/data/faiss_index/
+
+# SQLite databases
+*.db
+crm_dev.db
