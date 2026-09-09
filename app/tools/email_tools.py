@@ -17,7 +17,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = "openai/gpt-oss-20b"
+GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 
 # ── Input Schemas ─────────────────────────────────────────────────────────────

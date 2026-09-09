@@ -19,7 +19,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = "openai/gpt-oss-20b"
+GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 
 # ── Build Sales Knowledge Base Tool ──────────────────────────────────────────
@@ -219,11 +219,29 @@ class SalesAgent:
         ]
         steps = []
 
+        import time
+
         for iteration in range(self.max_iterations):
             if self.verbose:
                 print(f"\n  [Iter {iteration + 1}]")
 
-            ai_message = self.llm_with_tools.invoke(messages)
+            # Retry loop for API rate limits
+            ai_message = None
+            for attempt in range(3):
+                try:
+                    ai_message = self.llm_with_tools.invoke(messages)
+                    break
+                except Exception as e:
+                    if "429" in str(e) or "rate_limit" in str(e).lower():
+                        wait_sec = 5 * (attempt + 1)
+                        if self.verbose:
+                            print(f"  [Rate limit encountered, waiting {wait_sec}s...]")
+                        time.sleep(wait_sec)
+                    else:
+                        raise e
+            if ai_message is None:
+                ai_message = self.llm_with_tools.invoke(messages)
+
             messages.append(ai_message)
 
             if not ai_message.tool_calls:
@@ -397,23 +415,26 @@ Always:
 """
 
     def chat(self, message: str) -> str:
-        messages = [
-            SystemMessage(content=self._build_system_prompt()),
-            HumanMessage(content=message),
-        ]
-        for _ in range(6):
-            ai_msg = self.llm_with_tools.invoke(messages)
-            messages.append(ai_msg)
-            if not ai_msg.tool_calls:
-                answer = ai_msg.content
-                self._history.append({"role": "human", "content": message})
-                self._history.append({"role": "ai",    "content": answer})
-                return answer
-            for tc in ai_msg.tool_calls:
-                result = self.tool_map.get(tc["name"], lambda x: "Tool not found").invoke(tc["args"]) \
-                    if tc["name"] in self.tool_map else "Tool not found"
-                messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
-        return "Unable to resolve — please contact support@crmplatform.com"
+        try:
+            messages = [
+                SystemMessage(content=self._build_system_prompt()),
+                HumanMessage(content=message),
+            ]
+            for _ in range(6):
+                ai_msg = self.llm_with_tools.invoke(messages)
+                messages.append(ai_msg)
+                if not ai_msg.tool_calls:
+                    answer = ai_msg.content
+                    self._history.append({"role": "human", "content": message})
+                    self._history.append({"role": "ai",    "content": answer})
+                    return answer
+                for tc in ai_msg.tool_calls:
+                    result = self.tool_map.get(tc["name"], lambda x: "Tool not found").invoke(tc["args"]) \
+                        if tc["name"] in self.tool_map else "Tool not found"
+                    messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
+            return "Unable to resolve — please contact support@crmplatform.com"
+        except Exception as e:
+            return f"Support error: {str(e)}"
 
 
 # ── Tests ─────────────────────────────────────────────────────────────────────

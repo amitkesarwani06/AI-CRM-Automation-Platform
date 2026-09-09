@@ -16,3 +16,5 @@ app/data/faiss_index/
 # SQLite databases
 *.db
 crm_dev.db
+
+
