@@ -8,6 +8,12 @@ from app.workflows.nodes.lead_qualifier import (
     cold_lead_node,
     send_email_node,
 )
+from app.workflows.nodes.supervisor import (
+    supervisor_node,
+    route_supervisor,
+    synthesize_node,
+    log_routing_decision,
+)
 
 __all__ = [
     "classify_intent",
@@ -19,4 +25,8 @@ __all__ = [
     "warm_lead_node",
     "cold_lead_node",
     "send_email_node",
+    "supervisor_node",
+    "route_supervisor",
+    "synthesize_node",
+    "log_routing_decision",
 ]
