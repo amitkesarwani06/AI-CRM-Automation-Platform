@@ -85,9 +85,11 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 from app.api.routers.chat import router as chat_router
 from app.api.routers.leads import router as leads_router
+from app.api.routers.tasks import router as tasks_router
 
 app.include_router(chat_router)
 app.include_router(leads_router)
+app.include_router(tasks_router)
 
 
 # ── Health & Info Endpoints ───────────────────────────────────────────────────
