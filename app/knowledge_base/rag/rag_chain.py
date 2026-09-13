@@ -97,6 +97,7 @@ class RAGChain:
         self.llm = ChatGroq(
             model=model, 
             temperature=0,
+            max_tokens=500,
             api_key=os.getenv("GROQ_API_KEY"),
         )
 

@@ -9,7 +9,7 @@ load_dotenv()
 class LLMConfig:
     """Centralizes all LLM settings — change once, applies everywhere."""
     provider: str = os.getenv("LLM_PROVIDER", "groq")        # "groq" or "openai"
-    model: str = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
+    model: str = os.getenv("GROQ_MODEL", os.getenv("LLM_MODEL", "qwen/qwen3.8-27b"))
     temperature: float = 0.3
     max_retries: int = 3
     timeout_seconds: int = 30
