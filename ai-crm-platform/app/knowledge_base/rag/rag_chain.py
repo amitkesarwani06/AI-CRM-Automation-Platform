@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.documents import Document
 
 load_dotenv()
@@ -94,11 +94,11 @@ class RAGChain:
         self.model = model
 
         # LLM — temperature=0 for deterministic factual answers
-        self.llm = ChatGroq(
+        self.llm = ChatGoogleGenerativeAI(
             model=model, 
             temperature=0,
             max_tokens=500,
-            api_key=os.getenv("GROQ_API_KEY"),
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
 
         # THE FULL RAG CHAIN — read left to right

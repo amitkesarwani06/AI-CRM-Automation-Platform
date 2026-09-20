@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from dotenv import load_dotenv
 
@@ -11,7 +11,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 def classify_intent(state: dict) -> dict:
@@ -33,10 +33,10 @@ def classify_intent(state: dict) -> dict:
     latest = messages[-1]
     user_text = latest.content if hasattr(latest, "content") else str(latest)
 
-    llm = ChatGroq(
-        model=GROQ_MODEL,
+    llm = ChatGoogleGenerativeAI(
+        model=GEMINI_MODEL,
         temperature=0,
-        api_key=os.getenv("GROQ_API_KEY"),
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
     classification_prompt = f"""Classify this CRM message into ONE category:

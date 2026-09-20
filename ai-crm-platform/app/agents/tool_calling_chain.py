@@ -3,7 +3,7 @@ import sys
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from langchain_core.tools import BaseTool
 
@@ -60,10 +60,10 @@ class ToolCallingChain:
         self._history: list[dict] = []
 
         # Groq LLM with tools bound
-        llm = ChatGroq(
+        llm = ChatGoogleGenerativeAI(
             model=model,
             temperature=0,
-            api_key=os.getenv("GROQ_API_KEY"),
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
         self.llm_with_tools = llm.bind_tools(tools)
 

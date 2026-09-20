@@ -1,26 +1,26 @@
 import os
-from groq import Groq
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage, SystemMessage
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Groq client initialization
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
+# Gemini client initialization
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+llm = ChatGoogleGenerativeAI(
+    model=GEMINI_MODEL,
+    temperature=0.3,
+    google_api_key=os.getenv("GOOGLE_API_KEY")
+)
 
 def ask_llm(question: str, system_prompt: str = "You are a helpful CRM assistant.") -> str:
     """The atomic unit of every AI feature we'll build."""
-    response = client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question},
-        ],
-        temperature=0.3,
-    )
-    return response.choices[0].message.content
-
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=question),
+    ]
+    response = llm.invoke(messages)
+    return response.content
 
 if __name__ == "__main__":
     print(ask_llm("Say hello to a new CRM user named Aditya."))

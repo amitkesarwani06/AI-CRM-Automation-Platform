@@ -4,13 +4,13 @@ import logging
 from typing import TypedDict, Annotated, Optional
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 # ── Shared State ──────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ Plans: Starter Rs.999 (3 users), Growth Rs.2999 (15 users), Enterprise custom.
         store = UnifiedVectorStore(VectorStoreType.FAISS, "supervisor_support_kb")
         store.add_documents(chunks)
         retriever = RetrieverService(store).get_retriever(RetrieverType.SIMILARITY, k=2)
-        _support_rag_instance = RAGChain(retriever, model=GROQ_MODEL)
+        _support_rag_instance = RAGChain(retriever, model=GEMINI_MODEL)
     return _support_rag_instance
 
 
@@ -144,10 +144,10 @@ def analytics_agent_node(state: SupervisorState) -> dict:
         from app.tools.lead_tools_db import get_lead_stats
         stats = get_lead_stats.invoke({})
 
-        llm = ChatGroq(
-            model=GROQ_MODEL,
+        llm = ChatGoogleGenerativeAI(
+            model=GEMINI_MODEL,
             temperature=0,
-            api_key=os.getenv("GROQ_API_KEY"),
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
         prompt = (
             f"User asked: '{user_text}'\n\n"
@@ -181,10 +181,10 @@ def general_agent_node(state: SupervisorState) -> dict:
     messages = state.get("messages", [])
     user_text = messages[-1].content if messages else "Hello"
 
-    llm = ChatGroq(
-        model=GROQ_MODEL,
+    llm = ChatGoogleGenerativeAI(
+        model=GEMINI_MODEL,
         temperature=0.3,
-        api_key=os.getenv("GROQ_API_KEY"),
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
     )
     try:
         result = llm.invoke([HumanMessage(

@@ -4,7 +4,7 @@ import logging
 import threading
 
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from langchain_core.tools import BaseTool
 
@@ -48,7 +48,7 @@ class CRMReActAgent:
     def __init__(
         self,
         tools: list[BaseTool],
-        model: str = "openai/gpt-oss-20b",
+        model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
         max_iterations: int = 8,
         verbose: bool = True,
     ):
@@ -61,10 +61,10 @@ class CRMReActAgent:
         self.tool_map = {t.name: t for t in tools}
 
         # Groq LLM with tools bound
-        llm = ChatGroq(
+        llm = ChatGoogleGenerativeAI(
             model=model,
             temperature=0,
-            api_key=os.getenv("GROQ_API_KEY"),
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
         self.llm_with_tools = llm.bind_tools(tools)
 

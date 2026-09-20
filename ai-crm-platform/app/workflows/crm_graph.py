@@ -4,7 +4,7 @@ import logging
 from typing import TypedDict, Annotated
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
@@ -19,7 +19,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 # ── State Definition ──────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ Import leads from CSV in Settings then Import Data.
         store = UnifiedVectorStore(VectorStoreType.FAISS, "support_graph_kb")
         store.add_documents(chunks)
         retriever = RetrieverService(store).get_retriever(RetrieverType.SIMILARITY, k=2)
-        rag = RAGChain(retriever, model=GROQ_MODEL)
+        rag = RAGChain(retriever, model=GEMINI_MODEL)
         response = rag.invoke(user_text)
 
     except Exception as e:
@@ -161,10 +161,10 @@ def general_node(state: CRMState) -> dict:
     messages = state.get("messages", [])
     user_text = messages[-1].content if messages else ""
 
-    llm = ChatGroq(
-        model=GROQ_MODEL,
+    llm = ChatGoogleGenerativeAI(
+        model=GEMINI_MODEL,
         temperature=0.3,
-        api_key=os.getenv("GROQ_API_KEY"),
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
     prompt = (

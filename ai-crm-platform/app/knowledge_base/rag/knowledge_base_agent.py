@@ -31,7 +31,7 @@ class KnowledgeBaseAgent:
     def __init__(
         self,
         store_type: VectorStoreType = VectorStoreType.FAISS,
-        model: str = os.getenv("GROQ_MODEL", os.getenv("LLM_MODEL", "openai/gpt-oss-20b")), 
+        model: str = os.getenv("GEMINI_MODEL", os.getenv("LLM_MODEL", "gemini-2.5-flash")), 
     ):
         self.store = UnifiedVectorStore(
             store_type=store_type,

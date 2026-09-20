@@ -3,7 +3,7 @@ import sys
 import json
 import re
 import logging
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
 
@@ -13,7 +13,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 def score_lead(state: dict) -> dict:
@@ -27,10 +27,10 @@ def score_lead(state: dict) -> dict:
 
     latest = messages[-1].content if hasattr(messages[-1], "content") else str(messages[-1])
 
-    llm = ChatGroq(
-        model=GROQ_MODEL,
+    llm = ChatGoogleGenerativeAI(
+        model=GEMINI_MODEL,
         temperature=0,
-        api_key=os.getenv("GROQ_API_KEY"),
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
     prompt = f"""Analyze this CRM message and extract lead info + score.

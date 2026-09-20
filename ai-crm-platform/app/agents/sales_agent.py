@@ -3,7 +3,7 @@ import sys
 import logging
 
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, ToolMessage, SystemMessage
 from langchain_core.tools import tool, BaseTool
 from pydantic import BaseModel, Field
@@ -16,7 +16,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 # ── Build Sales Knowledge Base Tool ──────────────────────────────────────────
@@ -69,7 +69,7 @@ Refunds processed in 5-7 business days.
     store   = UnifiedVectorStore(store_type=VectorStoreType.FAISS, collection_name="sales_agent_kb")
     store.add_documents(chunks)
     retriever = RetrieverService(store).get_retriever(RetrieverType.SIMILARITY, k=3)
-    rag_chain = RAGChain(retriever, model=GROQ_MODEL)
+    rag_chain = RAGChain(retriever, model=GEMINI_MODEL)
 
     class SalesKBInput(BaseModel):
         query: str = Field(description="Question about CRM features, pricing, or plans")
@@ -159,7 +159,7 @@ class SalesAgent:
 
     def __init__(
         self,
-        model: str = GROQ_MODEL,
+        model: str = GEMINI_MODEL,
         max_iterations: int = 10,
         verbose: bool = True,
     ):
@@ -195,10 +195,10 @@ class SalesAgent:
         self.tool_map = {t.name: t for t in self.tools}
 
         # ── LLM ───────────────────────────────────────────────────────────────
-        llm = ChatGroq(
+        llm = ChatGoogleGenerativeAI(
             model=model,
             temperature=0.2,   # slight creativity for warm sales tone
-            api_key=os.getenv("GROQ_API_KEY"),
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
         self.llm_with_tools = llm.bind_tools(self.tools)
 
@@ -356,7 +356,7 @@ class SupportAgent:
     Week 4: SupervisorAgent routes to Alex for support issues.
     """
 
-    def __init__(self, model: str = GROQ_MODEL, verbose: bool = True):
+    def __init__(self, model: str = GEMINI_MODEL, verbose: bool = True):
         self.verbose = verbose
         self._history: list[dict] = []
 
@@ -376,9 +376,10 @@ class SupportAgent:
         ]
         self.tool_map = {t.name: t for t in self.tools}
 
-        llm = ChatGroq(
-            model=model, temperature=0,
-            api_key=os.getenv("GROQ_API_KEY"),
+        llm = ChatGoogleGenerativeAI(
+            model=model,
+            temperature=0,
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
         self.llm_with_tools = llm.bind_tools(self.tools)
 
@@ -448,7 +449,7 @@ if __name__ == "__main__":
     print("="*60)
 
     print("\n[SETUP] Building SalesAgent Maya...")
-    maya = SalesAgent(model=GROQ_MODEL, max_iterations=10, verbose=True)
+    maya = SalesAgent(model=GEMINI_MODEL, max_iterations=10, verbose=True)
     print(f"\nMaya ready | {len(maya.tools)} sales tools:")
     for t in maya.get_tool_names():
         print(f"  - {t}")
@@ -536,7 +537,7 @@ if __name__ == "__main__":
     time.sleep(2)
 
     print("[SETUP] Building SupportAgent Alex...")
-    alex = SupportAgent(model=GROQ_MODEL, verbose=False)
+    alex = SupportAgent(model=GEMINI_MODEL, verbose=False)
     print(f"Alex ready | {len(alex.tools)} support tools")
     print(f"Tools: {[t.name for t in alex.tools]}\n")
 

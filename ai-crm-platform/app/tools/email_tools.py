@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
 from langchain_core.tools import tool
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 # ── Input Schemas ─────────────────────────────────────────────────────────────
@@ -151,10 +151,10 @@ Base body:
 Return JSON: {{"subject": "...", "body": "..."}}"""
 
     try:
-        llm = ChatGroq(
-            model=GROQ_MODEL,
+        llm = ChatGoogleGenerativeAI(
+            model=GEMINI_MODEL,
             temperature=0.4,
-            api_key=os.getenv("GROQ_API_KEY"),
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
         response = llm.invoke(prompt)
         content = response.content.strip()
