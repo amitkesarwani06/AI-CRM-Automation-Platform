@@ -79,8 +79,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
         "http://127.0.0.1:5175",
-        # Add your production frontend URL here, e.g.:
-        # "https://your-app.vercel.app",
+        "https://crm-both-lyart.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
