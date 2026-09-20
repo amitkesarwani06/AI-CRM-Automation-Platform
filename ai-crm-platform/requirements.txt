@@ -9,7 +9,7 @@ pymongo==4.10.1
 
 # ── AI / LangChain Stack (pinned to avoid backtracking) ───────────────────────
 groq==0.18.0
-langchain-core==0.3.29
+langchain-core==0.3.33
 langchain-community==0.3.14
 langchain-groq==0.2.4
 langgraph==0.2.60
