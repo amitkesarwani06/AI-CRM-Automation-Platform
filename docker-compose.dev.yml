@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  api:
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./ai-crm-platform/app:/app/app           # mount source → changes reflect instantly
+      - ./ai-crm-platform/requirements.txt:/app/requirements.txt
+
+  worker:
+    command: celery -A app.tasks.celery_app worker --loglevel=debug --concurrency=1
+
+  react:
+    build:
+      context: ./crm-dashboard
+      dockerfile: Dockerfile  # Usually there's a Dockerfile.react.dev, but we'll stick to simple setup
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./crm-dashboard/src:/app/src  # hot reload
+      - ./crm-dashboard/index.html:/app/index.html

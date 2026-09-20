@@ -1,0 +1,144 @@
+version: '3.9'
+
+services:
+
+  # ── PostgreSQL Database ────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: crm_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-crm_db}
+      POSTGRES_USER:     ${POSTGRES_USER:-crm_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-crm_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-crm_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── MongoDB ────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: crm_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: crm_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes  # persist data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./ai-crm-platform
+      dockerfile: Dockerfile
+    container_name: crm_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Database connections — use SERVICE NAMES, not localhost!
+      DATABASE_URL: postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD:-crm_pass}@postgres:5432/${POSTGRES_DB:-crm_db}
+      MONGO_URL:    mongodb://mongo:27017
+      MONGO_DB:     ${MONGO_DB:-crm_db}
+      REDIS_URL:    redis://redis:6379/0
+      # AI Keys
+      OPENAI_API_KEY:  ${OPENAI_API_KEY}
+      GROQ_API_KEY:    ${GROQ_API_KEY:-}
+      GEMINI_API_KEY:  ${GEMINI_API_KEY:-}
+      # App Config
+      API_KEY:         ${API_KEY:-crm-dev-key-2024}
+      GROQ_MODEL:      ${GROQ_MODEL:-qwen/qwen3.8-27b}
+      # Suppress HuggingFace warnings
+      HF_HUB_DISABLE_SYMLINKS_WARNING: "1"
+      HF_HUB_VERBOSITY: "error"
+      TOKENIZERS_PARALLELISM: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - hf_cache:/root/.cache   # HuggingFace model cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s  # give time for startup
+
+  # ── Celery Worker ──────────────────────────────────────────────────────────
+  worker:
+    build:
+      context: ./ai-crm-platform
+      dockerfile: Dockerfile    # same image as api
+    container_name: crm_worker
+    restart: unless-stopped
+    # Override command — run celery instead of uvicorn
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD:-crm_pass}@postgres:5432/${POSTGRES_DB:-crm_db}
+      MONGO_URL:    mongodb://mongo:27017
+      MONGO_DB:     ${MONGO_DB:-crm_db}
+      REDIS_URL:    redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GROQ_API_KEY:   ${GROQ_API_KEY:-}
+      GROQ_MODEL:     ${GROQ_MODEL:-qwen/qwen3.8-27b}
+      API_KEY:        ${API_KEY:-crm-dev-key-2024}
+      HF_HUB_DISABLE_SYMLINKS_WARNING: "1"
+      TOKENIZERS_PARALLELISM: "false"
+    depends_on:
+      - redis
+      - postgres
+      - mongo
+    volumes:
+      - hf_cache:/root/.cache
+
+  # ── React Frontend ─────────────────────────────────────────────────────────
+  react:
+    build:
+      context: ./crm-dashboard
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        VITE_API_KEY: ${VITE_API_KEY:-crm-dev-key-2024}
+    container_name: crm_react
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+# ── Named Volumes (persist data) ──────────────────────────────────────────────
+volumes:
+  postgres_data:  # leads, email_logs survive container restart
+  mongo_data:     # chat history survives restart
+  redis_data:     # task results survive restart
+  hf_cache:       # HuggingFace models cached (save re-download time)
