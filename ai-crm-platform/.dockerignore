@@ -1,0 +1,15 @@
+# .dockerignore
+.git
+.gitignore
+.env
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.venv
+venv
+node_modules
+app/data/chroma_db
+app/data/faiss_index
+*.log
+.DS_Store

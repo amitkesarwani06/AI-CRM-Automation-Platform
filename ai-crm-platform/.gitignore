@@ -1,0 +1,22 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+
+# Knowledge base raw docs
+app/knowledge_base/raw_docs/*.pdf
+
+app/data/chroma_db/
+
+# FAISS index files
+app/data/faiss_index/
+
+# Logs
+logs/
+*.log
+
+# SQLite databases
+*.db
+crm_dev.db

@@ -1,0 +1,4 @@
+Welcome to AI CRM Platform.
+We help businesses manage leads, automate workflows, and empower support agents with RAG-driven knowledge bases.
+Our refund policy states that subscriptions can be cancelled within 14 days of purchase for a full refund.
+Support contact: support@aicrmplatform.example.com
