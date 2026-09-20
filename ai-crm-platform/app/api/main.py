@@ -70,20 +70,8 @@ Built with **LangChain**, **LangGraph Multi-Agent Supervisor**, and **FastAPI**.
 # Required for React Dashboard (Day 28) and external frontends to communicate
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",   # Vite default
-        "http://localhost:5174",   # Vite fallback
-        "http://localhost:5175",   # Vite fallback
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://127.0.0.1:5175",
-        "https://crm-both-lyart.vercel.app",
-        "https://crm-both-git-main-amitkesarwani9309-gmailcoms-projects.vercel.app",
-    ],
-    allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
