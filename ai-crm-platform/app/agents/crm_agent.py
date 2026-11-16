@@ -1,10 +1,10 @@
-import os
+﻿import os
 import sys
 import logging
 import threading
 
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from langchain_core.tools import tool, BaseTool
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 logger = logging.getLogger(__name__)
 
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 
 # ── Build RAG Tool ────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ Analytics dashboard with real-time sales reports.
     store = UnifiedVectorStore(store_type=VectorStoreType.FAISS, collection_name="crm_agent_kb")
     store.add_documents(chunks)
     retriever = RetrieverService(store).get_retriever(RetrieverType.SIMILARITY, k=3)
-    rag_chain = RAGChain(retriever, model=GEMINI_MODEL)
+    rag_chain = RAGChain(retriever, model=GROQ_MODEL)
 
     class KBSearchInput(BaseModel):
         query: str = Field(description="Question to search in the CRM knowledge base")
@@ -140,10 +140,10 @@ class FullCRMAgent:
         ]
         self.tool_map = {t.name: t for t in self.tools}
 
-        llm = ChatGoogleGenerativeAI(
+        llm = ChatGroq(
             model=model,
             temperature=0,
-            google_api_key=os.getenv("GOOGLE_API_KEY"),
+            api_key=os.getenv("GROQ_API_KEY"),
         )
         self.llm_with_tools = llm.bind_tools(self.tools)
 
@@ -323,8 +323,8 @@ Be concise and professional.
         if history == "No conversation history yet.":
             return "No conversation history to summarize."
 
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        llm = ChatGoogleGenerativeAI(model=self.model, temperature=0, google_api_key=os.getenv("GOOGLE_API_KEY"))
+        from langchain_groq import ChatGroq
+        llm = ChatGroq(model=self.model, temperature=0, api_key=os.getenv("GROQ_API_KEY"))
         summary = llm.invoke(
             f"Summarize what was accomplished in this CRM session in 3-5 bullet points:\n\n{history}"
         )
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     print("="*60)
 
     print("\n[SETUP] Building FullCRMAgent 'Aria'...")
-    agent = FullCRMAgent(model=GEMINI_MODEL, max_iterations=8, verbose=True)
+    agent = FullCRMAgent(model=GROQ_MODEL, max_iterations=8, verbose=True)
     print(f"Tools: {agent.get_tool_list()}\n")
 
     # ── TEST 1: RAG question ──────────────────────────────────────────────────

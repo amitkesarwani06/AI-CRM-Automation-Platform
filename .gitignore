@@ -1,0 +1,44 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.docker
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Node.js
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Databases
+*.db
+*.sqlite3
+crm_dev.db
+
+# Vector databases & indexes
+app/data/chroma_db/
+app/data/faiss_index/
+ai-crm-platform/app/data/chroma_db/
+ai-crm-platform/app/data/faiss_index/
+
+# Logs
+logs/
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

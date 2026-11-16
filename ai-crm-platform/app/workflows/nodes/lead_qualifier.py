@@ -13,7 +13,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 
 def score_lead(state: dict) -> dict:

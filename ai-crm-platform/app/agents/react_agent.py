@@ -48,7 +48,7 @@ class CRMReActAgent:
     def __init__(
         self,
         tools: list[BaseTool],
-        model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+        model: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
         max_iterations: int = 8,
         verbose: bool = True,
     ):

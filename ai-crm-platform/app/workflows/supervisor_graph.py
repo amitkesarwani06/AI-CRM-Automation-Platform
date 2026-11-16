@@ -10,7 +10,7 @@ from langgraph.graph.message import add_messages
 
 logger = logging.getLogger(__name__)
 
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 
 # ── Shared State ──────────────────────────────────────────────────────────────

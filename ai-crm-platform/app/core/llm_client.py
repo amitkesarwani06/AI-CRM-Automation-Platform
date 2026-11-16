@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Gemini client initialization
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 llm = ChatGoogleGenerativeAI(
     model=GEMINI_MODEL,
     temperature=0.3,

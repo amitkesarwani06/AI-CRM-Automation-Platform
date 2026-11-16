@@ -13,7 +13,23 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+
+def _extract_text(content) -> str:
+    """Helper to safely extract string from string or list content returned by LangChain models."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict) and "text" in item:
+                parts.append(item["text"])
+            else:
+                parts.append(str(item))
+        return " ".join(parts)
+    return str(content) if content is not None else ""
 
 SUPERVISOR_SYSTEM = """You are the Supervisor Orchestrator of an AI CRM system.
 
@@ -77,7 +93,7 @@ def supervisor_node(state: dict) -> dict:
         response = llm.invoke([
             HumanMessage(content=f"{SUPERVISOR_SYSTEM}\n\nUser message: \"{latest}\"")
         ])
-        content = response.content.strip()
+        content = _extract_text(response.content).strip()
 
         if "```" in content:
             match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", content, re.DOTALL)
@@ -187,7 +203,8 @@ def synthesize_node(state: dict) -> dict:
     )
 
     try:
-        combined = llm.invoke([HumanMessage(content=synthesis_prompt)]).content.strip()
+        raw_res = llm.invoke([HumanMessage(content=synthesis_prompt)]).content
+        combined = _extract_text(raw_res).strip()
     except Exception as e:
         logger.warning(f"Synthesis fallback: {e}")
         combined = "\n\n".join([f"{res}" for res in agent_results.values()])

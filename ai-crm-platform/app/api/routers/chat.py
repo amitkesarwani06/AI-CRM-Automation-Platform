@@ -76,7 +76,19 @@ async def chat(
 
         agents_used = list(result.get("agent_results", {}).keys())
         intent = result.get("intent", "")
-        response_text = result.get("final_response") or "I couldn't process your request."
+        raw_response = result.get("final_response") or "I couldn't process your request."
+        if isinstance(raw_response, list):
+            parts = []
+            for item in raw_response:
+                if isinstance(item, str):
+                    parts.append(item)
+                elif isinstance(item, dict) and "text" in item:
+                    parts.append(item["text"])
+                else:
+                    parts.append(str(item))
+            response_text = " ".join(parts)
+        else:
+            response_text = str(raw_response)
 
         logger.info(
             f"Chat processed: '{request.message[:50]}' -> "
